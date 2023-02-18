@@ -1,8 +1,14 @@
 {
   "name": "remix-auth-strategy-template",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
+  "author": {
+    "name": "takagimeow",
+    "email": "mit@takagi.app",
+    "url": "https://github.com/takagimeow"
+  },
+  "description": "A Remix Auth strategy for working with JWT",
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "typecheck": "tsc --project tsconfig.json --noEmit",
@@ -15,7 +21,9 @@
     "remix-auth",
     "auth",
     "authentication",
-    "strategy"
+    "strategy",
+    "jwt",
+    "resource-routes"
   ],
   "license": "MIT",
   "files": [
@@ -23,6 +31,11 @@
     "package.json",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/takagimeow/remix-auth-jwt"
+  },
+  "homepage": "https://github.com/takagimeow/remix-auth-jwt",
   "peerDependencies": {
     "@remix-run/server-runtime": "^1.0.0"
   },
