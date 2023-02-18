@@ -1,7 +1,7 @@
 import { createCookieSessionStorage } from "@remix-run/node";
 import * as jwt from "jsonwebtoken";
-import { AuthenticateOptions } from "remix-auth";
-import { JwtStrategy } from "../src";
+import { AuthenticateOptions, AuthorizationError } from "remix-auth";
+import { JwtStrategy, JwtStrategyVerifyParams } from "../src";
 
 const BASE_OPTIONS: AuthenticateOptions = {
   name: "form",
@@ -48,7 +48,52 @@ describe(JwtStrategy, () => {
       },
     });
 
+    await strategy.authenticate(request, sessionStorage, {
+      ...BASE_OPTIONS,
+    });
+    expect(verify).toBeCalledWith({
+      payload: {
+        ...payload,
+        iat: expect.any(Number),
+      },
+    });
+  });
+
+  test("should return what the verify callback returned", async () => {
+    verify.mockImplementationOnce(
+      async ({ payload }: JwtStrategyVerifyParams) => {
+        return payload["username"];
+      }
+    );
+
+    let request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     let context = { test: "it works!" };
+
+    let strategy = new JwtStrategy<User>(options, verify);
+
+    const user = await strategy.authenticate(request, sessionStorage, {
+      ...BASE_OPTIONS,
+      context,
+    });
+
+    expect(user).toBe(payload.username);
+  });
+
+  test("should pass the context to the verify callback", async () => {
+    let request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    let context = { test: "it works!" };
+
+    let strategy = new JwtStrategy<User>(options, verify);
 
     await strategy.authenticate(request, sessionStorage, {
       ...BASE_OPTIONS,
@@ -61,5 +106,80 @@ describe(JwtStrategy, () => {
       },
       context,
     });
+  });
+
+  test("should pass error as cause on failure", async () => {
+    verify.mockImplementationOnce(() => {
+      throw new TypeError("Invalid bearer token");
+    });
+
+    let request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    let strategy = new JwtStrategy<User>(options, verify);
+
+    let result = await strategy
+      .authenticate(request, sessionStorage, {
+        ...BASE_OPTIONS,
+        throwOnError: true,
+      })
+      .catch((error) => error);
+
+    expect(result).toEqual(new AuthorizationError("Invalid bearer token"));
+    expect((result as AuthorizationError).cause).toEqual(
+      new TypeError("Invalid bearer token")
+    );
+  });
+
+  test("should pass generate error from string on failure", async () => {
+    verify.mockImplementationOnce(() => {
+      throw "Invalid bearer token";
+    });
+
+    let request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    let strategy = new JwtStrategy<User>(options, verify);
+
+    let result = await strategy
+      .authenticate(request, sessionStorage, {
+        ...BASE_OPTIONS,
+        throwOnError: true,
+      })
+      .catch((error) => error);
+
+    expect(result).toEqual(new AuthorizationError("Invalid bearer token"));
+    expect((result as AuthorizationError).cause).toEqual(
+      new TypeError("Invalid bearer token")
+    );
+  });
+
+  test("should create Unknown error if thrown value is not Error or string", async () => {
+    verify.mockImplementationOnce(() => {
+      throw { message: "Invalid bearer token" };
+    });
+
+    let request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    let strategy = new JwtStrategy<User>(options, verify);
+
+    let result = await strategy
+      .authenticate(request, sessionStorage, {
+        ...BASE_OPTIONS,
+        throwOnError: true,
+      })
+      .catch((error) => error);
+
+    expect(result).toEqual(new AuthorizationError("Unknown error"));
+    expect((result as AuthorizationError).cause).toEqual(
+      new Error(JSON.stringify({ message: "Invalid bearer token" }, null, 2))
+    );
   });
 });
