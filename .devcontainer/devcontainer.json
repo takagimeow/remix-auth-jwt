@@ -13,7 +13,8 @@
 				"waderyan.gitblame",
 				"donjayamanne.githistory",
 				"eamodio.gitlens",
-				"mhutchie.git-graph"
+				"mhutchie.git-graph",
+				"esbenp.prettier-vscode"
 			]
 		}
 	}
