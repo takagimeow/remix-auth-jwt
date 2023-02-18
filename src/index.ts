@@ -77,7 +77,8 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
           error.message,
           request,
           sessionStorage,
-          options
+          options,
+          error
         );
       }
       if (typeof error === "string") {
@@ -89,12 +90,13 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
           new Error(error)
         );
       }
+      return await this.failure(
+        "Unknown error",
+        request,
+        sessionStorage,
+        options,
+        new Error(JSON.stringify(error, null, 2))
+      );
     }
-    return await this.failure(
-      "Unknown error",
-      request,
-      sessionStorage,
-      options
-    );
   }
 }
