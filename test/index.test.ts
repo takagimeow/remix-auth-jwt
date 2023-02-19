@@ -36,7 +36,7 @@ describe(JwtStrategy, () => {
 
   beforeAll(async () => {
     const jwt = container.resolve<JsonwebtokenService>("JsonwebtokenService");
-    token = await jwt.sign(payload, secret);
+    token = jwt.sign(payload, secret);
   });
 
   beforeEach(() => {
