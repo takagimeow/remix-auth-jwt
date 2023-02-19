@@ -1,7 +1,11 @@
+import "reflect-metadata";
 import { createCookieSessionStorage } from "@remix-run/node";
-import * as jwt from "jsonwebtoken";
+// import * as jwt from "jsonwebtoken-esm";
 import { AuthenticateOptions, AuthorizationError } from "remix-auth";
+import { container } from "tsyringe";
 import { JwtStrategy, JwtStrategyVerifyParams } from "../src";
+import { JsonwebtokenService } from "../src/core/service/jsonwebtoken/JsonwebtokenService";
+import { jsonwebtokenModule } from "../src/core/service/di/JsonwebtokenModule";
 
 const BASE_OPTIONS: AuthenticateOptions = {
   name: "form",
@@ -9,6 +13,8 @@ const BASE_OPTIONS: AuthenticateOptions = {
   sessionErrorKey: "error",
   sessionStrategyKey: "strategy",
 };
+
+jsonwebtokenModule();
 
 describe(JwtStrategy, () => {
   let verify = jest.fn();
@@ -23,11 +29,15 @@ describe(JwtStrategy, () => {
   });
 
   const payload = { username: "example@example.com" };
-  const token = jwt.sign(payload, secret);
-
+  let token: string;
   interface User {
     id: string;
   }
+
+  beforeAll(async () => {
+    const jwt = container.resolve<JsonwebtokenService>("JsonwebtokenService");
+    token = await jwt.sign(payload, secret);
+  });
 
   beforeEach(() => {
     jest.resetAllMocks();
