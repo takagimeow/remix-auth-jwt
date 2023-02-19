@@ -18,7 +18,7 @@ A Remix Auth strategy for working with JWT.
 First, install the strategy, jsonwebtoken@8.5.1, jsonwebtoken-esm@1.0.5 and Remix Auth.
 
 ```bash
-$ npm install remix-auth remix-auth-jwt jsonwebtoken jsonwebtoken-esm
+$ npm install remix-auth remix-auth-jwt jsonwebtoken@8.5.1 jsonwebtoken-esm@1.0.5
 ```
 
 Then, create an Authenticator instance.
