@@ -1,10 +1,17 @@
+import "reflect-metadata";
 import { AppLoadContext, SessionStorage } from "@remix-run/server-runtime";
 import {
   AuthenticateOptions,
   Strategy,
   StrategyVerifyCallback,
 } from "remix-auth";
-import * as jwt from "jsonwebtoken";
+// import * as jwt from "jsonwebtoken-esm";
+import type { JwtPayload } from "jsonwebtoken";
+import { JsonwebtokenService } from "./core/service/jsonwebtoken/JsonwebtokenService";
+import { container } from "tsyringe";
+import { jsonwebtokenModule } from "./core/service/di/JsonwebtokenModule";
+
+jsonwebtokenModule();
 
 /**
  * This interface declares what configuration the strategy needs from the
@@ -23,13 +30,14 @@ export interface JwtStrategyOptions {
  */
 export interface JwtStrategyVerifyParams {
   context?: AppLoadContext;
-  payload: string | jwt.JwtPayload;
+  payload: string | JwtPayload;
 }
 
 export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
   name = "jwt";
 
   protected secret: string;
+  protected jwt: JsonwebtokenService;
 
   constructor(
     options: JwtStrategyOptions,
@@ -37,6 +45,7 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
   ) {
     super(verify);
     this.secret = options.secret;
+    this.jwt = container.resolve<JsonwebtokenService>("JsonwebtokenService");
   }
 
   async authenticate(
@@ -56,7 +65,7 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
         );
       }
 
-      const decoded = jwt.verify(token, this.secret);
+      const decoded = this.jwt.verify(token, this.secret);
       if (!decoded) {
         return await this.failure(
           "Invalid token",
