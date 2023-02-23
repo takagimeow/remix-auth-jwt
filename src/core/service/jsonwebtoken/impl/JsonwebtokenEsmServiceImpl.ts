@@ -13,9 +13,12 @@ export class JsonwebtokenEsmServiceImpl implements JsonwebtokenService {
 
   verify(
     token: string,
-    secretOrPublicKey: jsonwebtoken.Secret
+    secretOrPublicKey: jsonwebtoken.Secret,
+    options: {
+      algorithms?: jsonwebtoken.Algorithm[];
+    }
   ): string | jsonwebtoken.JwtPayload {
-    const result = this.jwtVerify(token, secretOrPublicKey);
+    const result = this.jwtVerify(token, secretOrPublicKey, options);
     return result;
   }
   sign(
