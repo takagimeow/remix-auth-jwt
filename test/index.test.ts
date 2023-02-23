@@ -6,6 +6,7 @@ import { container } from "tsyringe";
 import { JwtStrategy, JwtStrategyVerifyParams } from "../src";
 import { JsonwebtokenService } from "../src/core/service/jsonwebtoken/JsonwebtokenService";
 import { jsonwebtokenModule } from "../src/core/service/di/JsonwebtokenModule";
+import { Algorithm } from "jsonwebtoken";
 
 const BASE_OPTIONS: AuthenticateOptions = {
   name: "form",
@@ -26,6 +27,7 @@ describe(JwtStrategy, () => {
   const secret = "s3cr3t";
   let options = Object.freeze({
     secret,
+    algorithms: ["HS256"] as Algorithm[],
   });
 
   const payload = { username: "example@example.com" };
