@@ -84,6 +84,7 @@ authenticator.use(
   new JwtStrategy(
     {
       secret: "s3cr3t",
+      algorithms: ["HS256"] as Algorithm[],
     },
     // Define what to do when the request is authenticated
     async ({ payload, context }) => {
