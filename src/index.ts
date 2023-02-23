@@ -10,6 +10,7 @@ import type { JwtPayload } from "jsonwebtoken";
 import { JsonwebtokenService } from "./core/service/jsonwebtoken/JsonwebtokenService";
 import { container } from "tsyringe";
 import { jsonwebtokenModule } from "./core/service/di/JsonwebtokenModule";
+import type { Algorithm } from "jsonwebtoken";
 
 jsonwebtokenModule();
 
@@ -22,6 +23,11 @@ export interface JwtStrategyOptions {
    * The key to verify the JWT
    */
   secret: string;
+
+  /**
+   * The algorithms to verify the JWT
+   */
+  algorithms: Algorithm[];
 }
 
 /**
@@ -37,6 +43,7 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
   name = "jwt";
 
   protected secret: string;
+  protected algorithms: Algorithm[];
   protected jwt: JsonwebtokenService;
 
   constructor(
@@ -45,6 +52,7 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
   ) {
     super(verify);
     this.secret = options.secret;
+    this.algorithms = options.algorithms;
     this.jwt = container.resolve<JsonwebtokenService>("JsonwebtokenService");
   }
 
@@ -65,7 +73,9 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
         );
       }
 
-      const decoded = this.jwt.verify(token, this.secret);
+      const decoded = this.jwt.verify(token, this.secret, {
+        algorithms: this.algorithms,
+      });
       if (!decoded) {
         return await this.failure(
           "Invalid token",

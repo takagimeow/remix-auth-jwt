@@ -2,7 +2,13 @@
 import * as jwt from "jsonwebtoken";
 
 export interface JsonwebtokenService {
-  verify(token: string, secretOrPublicKey: jwt.Secret): string | jwt.JwtPayload;
+  verify(
+    token: string,
+    secretOrPublicKey: jwt.Secret,
+    options?: {
+      algorithms?: jwt.Algorithm[];
+    }
+  ): string | jwt.JwtPayload;
   sign(
     payload: string | object | Buffer,
     secretOrPrivateKey: jwt.Secret
