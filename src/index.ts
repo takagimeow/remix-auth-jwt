@@ -28,6 +28,8 @@ export interface JwtStrategyOptions {
    * The algorithms to verify the JWT
    */
   algorithms: Algorithm[];
+
+  getToken?: (req: Request) => string | Promise<string>;
 }
 
 /**
@@ -45,6 +47,7 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
   protected secret: string;
   protected algorithms: Algorithm[];
   protected jwt: JsonwebtokenService;
+  protected getToken?: JwtStrategyOptions["getToken"];
 
   constructor(
     options: JwtStrategyOptions,
@@ -54,6 +57,10 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
     this.secret = options.secret;
     this.algorithms = options.algorithms;
     this.jwt = container.resolve<JsonwebtokenService>("JsonwebtokenService");
+
+    if (options.getToken) {
+      this.getToken = options.getToken;
+    }
   }
 
   async authenticate(
@@ -61,9 +68,12 @@ export class JwtStrategy<User> extends Strategy<User, JwtStrategyVerifyParams> {
     sessionStorage: SessionStorage,
     options: AuthenticateOptions
   ): Promise<User> {
+    let token: string | undefined;
     try {
-      // Validating Authorisation headers using jsonwebtoken.
-      const token = request.headers.get("Authorization")?.split(" ")[1];
+      token = this.getToken
+        ? await this.getToken(request)
+        : request.headers.get("Authorization")?.split(" ")[1];
+
       if (token == undefined) {
         return await this.failure(
           "Format is Authorization: Bearer [token]",
