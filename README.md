@@ -3,10 +3,9 @@
 [![npm version](https://badge.fury.io/js/remix-auth-jwt.svg)](https://badge.fury.io/js/remix-auth-jwt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
 A Remix Auth strategy for working with JWT.
 
-This strategy is influenced by Ktor's JSON Web Tokens-related library.
+This strategy is influenced by Ktor's JSON Web Tokens-related library and the express-jwt library.
 
 In other words, when Remix is used as an API-only application, this strategy comes into effect.
 
@@ -14,8 +13,8 @@ In other words, when Remix is used as an API-only application, this strategy com
 
 | Runtime    | Has Support |
 | ---------- | ----------- |
-| Node.js    | ✅          |
-| Cloudflare | ✅          |
+| Node.js    | ✅           |
+| Cloudflare | ✅           |
 
 This strategy has been tested to work with Node.js as well as with Cloudflare workers.
 
@@ -50,6 +49,16 @@ curl -X GET \
 Check out [this repository](https://github.com/takagimeow/remix-auth-jwt-cloudflare-workers) to learn how to implement this strategy for the applications you want to run on Cloudflare Workers.
 
 <!-- If it doesn't support one runtime, explain here why -->
+
+## API
+
+The parameter passed as the first argument when this strategy class is initialized contains the following:
+
+| Name       | Type                                                                   | Description                                         |
+| ---------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
+| secret     | string                                                                 | The secret used to sign the token.                  |
+| algorithms | Algorithm[]                                                            | The algorithms used to sign the token.              |
+| getToken?  | (req: Request) => string \| undefined \| Promise<string \| undefined>; | A function that returns the token from the request. |
 
 ## How to use
 
