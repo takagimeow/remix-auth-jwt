@@ -29,7 +29,7 @@ export interface JwtStrategyOptions {
    */
   algorithms: Algorithm[];
 
-  getToken?: (req: Request) => string | Promise<string>;
+  getToken?: (req: Request) => string | undefined | Promise<string | undefined>;
 }
 
 /**
