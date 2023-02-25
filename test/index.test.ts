@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage, Request } from "@remix-run/node";
 // import * as jwt from "jsonwebtoken-esm";
 import { AuthenticateOptions, AuthorizationError } from "remix-auth";
 import { container } from "tsyringe";
@@ -120,6 +120,32 @@ describe(JwtStrategy, () => {
     });
   });
 
+  test("should pass token returned by getToken function to verify function", async () => {
+    const request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const strategy = new JwtStrategy<User>(
+      {
+        ...options,
+        getToken: (req) => req.headers.get("Authorization")?.split(" ")[1],
+      },
+      verify
+    );
+
+    await strategy.authenticate(request, sessionStorage, {
+      ...BASE_OPTIONS,
+    });
+    expect(verify).toBeCalledWith({
+      payload: {
+        ...payload,
+        iat: expect.any(Number),
+      },
+    });
+  });
+
   test("should pass error as cause on failure", async () => {
     verify.mockImplementationOnce(() => {
       throw new TypeError("Invalid bearer token");
@@ -192,6 +218,36 @@ describe(JwtStrategy, () => {
     expect(result).toEqual(new AuthorizationError("Unknown error"));
     expect((result as AuthorizationError).cause).toEqual(
       new Error(JSON.stringify({ message: "Invalid bearer token" }, null, 2))
+    );
+  });
+
+  test("should raise an error if getToken returns undefined", async () => {
+    const request = new Request("http://localhost:3000", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const strategy = new JwtStrategy<User>(
+      {
+        ...options,
+        getToken: () => {
+          // eslint-disable-next-line unicorn/no-useless-undefined
+          return undefined;
+        },
+      },
+      verify
+    );
+    const result = await strategy
+      .authenticate(request, sessionStorage, {
+        ...BASE_OPTIONS,
+        throwOnError: true,
+      })
+      .catch((error) => error);
+    expect(result).toEqual(
+      new AuthorizationError("Format is Authorization: Bearer [token]")
+    );
+    expect((result as AuthorizationError).cause).toEqual(
+      new Error("Format is Authorization: Bearer [token]")
     );
   });
 });
